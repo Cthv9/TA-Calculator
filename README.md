@@ -27,5 +27,3 @@ Funziona anche **offline** grazie al service worker.
 - Installabile come app (PWA)
 
 ---
-
-## 📁 Struttura del progetto
