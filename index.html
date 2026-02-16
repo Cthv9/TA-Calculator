@@ -115,10 +115,14 @@
       line-height: 1.4;
     }
 
-    #qrcode {
-      margin-top: 20px;
-      display: flex;
-      justify-content: center;
+    .error {
+      margin-top: 12px;
+      color: #b00020;
+      font-weight: 600;
+    }
+
+    small {
+      color: #666;
     }
   </style>
 </head>
@@ -153,28 +157,7 @@
 
     <div id="error" class="error"></div>
     <div id="result" class="result" style="display:none;"></div>
-
-    <div id="qrcode"></div>
   </div>
-
-  <!-- QR Code generator (inline, no CDN) -->
-  <script>
-    /*! QRCode.js - minimal inline version */
-    class QRCode {
-      constructor(el, text) {
-        el.innerHTML = "";
-        const size = 180;
-        const canvas = document.createElement("canvas");
-        canvas.width = size;
-        canvas.height = size;
-        el.appendChild(canvas);
-        const ctx = canvas.getContext("2d");
-        ctx.fillStyle = "#000";
-        ctx.font = "14px sans-serif";
-        ctx.fillText("QR non disponibile offline", 10, 90);
-      }
-    }
-  </script>
 
   <script>
     function calcolaTA() {
@@ -187,11 +170,9 @@
 
       const errorDiv = document.getElementById('error');
       const resultDiv = document.getElementById('result');
-      const qrDiv = document.getElementById('qrcode');
 
       errorDiv.textContent = '';
       resultDiv.style.display = 'none';
-      qrDiv.innerHTML = '';
 
       if ([PkW, V, pf, L, S].some(v => isNaN(v) || v <= 0)) {
         errorDiv.textContent = "Inserisci valori validi in tutti i campi.";
@@ -227,19 +208,14 @@
         <strong>VA minimi richiesti:</strong> ${VA_required.toFixed(1)} VA → <strong>scegli:</strong> ${VA_final} VA<br>
 
         <div class="note">
-          <strong>Nota:</strong> calcolo esclusivamente per TA di misura.
-          Le indicazioni di TA di protezione non sono incluse.
-        </div>
+          <strong>Nota:</strong> calcolo dedicato ai TA di misura.  
+          </div>
 
         <small>Calcolo indicativo, verificare sempre con schede costruttore.</small>
 		<small>Made with <3 by DF</small>
       `;
-
-      // QR code (link alla pagina)
-      new QRCode(qrDiv, window.location.href);
     }
 
-    // Register service worker
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("sw.js");
     }

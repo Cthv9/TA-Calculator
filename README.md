@@ -7,7 +7,7 @@ Il tool calcola automaticamente:
 - Rapporto TA consigliato
 - Classe (solo misura)
 - VA minimi richiesti in base alla lunghezza e sezione dei cavi
-- QR code per condividere rapidamente la pagina
+
 
 L’app è sviluppata come **PWA (Progressive Web App)** ed è installabile su desktop e mobile.  
 Funziona anche **offline** grazie al service worker.
@@ -22,7 +22,6 @@ Funziona anche **offline** grazie al service worker.
 - Classe impostata automaticamente su **0.5 (solo misura)**
 - Calcolo dei VA minimi richiesti e scelta del valore standard
 - Interfaccia moderna, responsive e ottimizzata per mobile
-- **QR code integrato** per condividere la pagina
 - Funzionamento **offline** tramite service worker
 - Installabile come app (PWA)
 
