@@ -26,3 +26,12 @@ Funziona anche **offline** grazie al service worker.
 - Installabile come app (PWA)
 
 ---
+
+## 🌐 Versione online
+
+Puoi utilizzare il tool direttamente qui:
+
+👉 **https://cthv9.github.io/TA-Calculator/**
+
+---
+
