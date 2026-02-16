@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <title>Calcolo TA</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Manifest PWA -->
+  <link rel="manifest" href="manifest.json">
+
+  <!-- iOS support -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <link rel="apple-touch-icon" href="assets/icon-192.png">
+
+  <style>
+    :root {
+      --primary: #005eff;
+      --primary-dark: #0041b3;
+      --bg: #eef1f6;
+      --card-bg: #ffffff;
+      --radius: 14px;
+      --shadow: 0 6px 18px rgba(0,0,0,0.08);
+    }
+
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: #222;
+    }
+
+    .container {
+      max-width: 720px;
+      margin: auto;
+      background: var(--card-bg);
+      padding: 28px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      animation: fadeIn 0.4s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    h1 {
+      margin-top: 0;
+      font-size: 28px;
+      font-weight: 600;
+      color: var(--primary-dark);
+    }
+
+    label {
+      display: block;
+      margin-top: 18px;
+      font-weight: 600;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px;
+      margin-top: 6px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      font-size: 15px;
+      transition: 0.2s;
+      background: #fafafa;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--primary);
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(0,94,255,0.25);
+      background: #fff;
+    }
+
+    button {
+      width: 100%;
+      margin-top: 30px;
+      padding: 14px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 17px;
+      cursor: pointer;
+      transition: 0.2s;
+      font-weight: 600;
+    }
+
+    button:hover {
+      background: var(--primary-dark);
+    }
+
+    .result {
+      margin-top: 30px;
+      padding: 22px;
+      background: #e9f2ff;
+      border-left: 4px solid var(--primary);
+      border-radius: 10px;
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    .note {
+      margin-top: 18px;
+      padding: 14px;
+      background: #fff7d6;
+      border-left: 4px solid #ffcc00;
+      border-radius: 8px;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    #qrcode {
+      margin-top: 20px;
+      display: flex;
+      justify-content: center;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>Dimensionamento Trasformatore Amperometrico (TA)</h1>
+    <p><small>Calcolo automatico del rapporto TA, classe e VA richiesti (solo misura).</small></p>
+
+    <label>Tipo di sistema</label>
+    <select id="phase">
+      <option value="1">Monofase (1φ)</option>
+      <option value="3">Trifase (3φ)</option>
+    </select>
+
+    <label>Potenza attiva P [kW]</label>
+    <input type="number" id="power" placeholder="Es. 50" step="0.01">
+
+    <label>Tensione linea [V]</label>
+    <input type="number" id="voltage" placeholder="Es. 400">
+
+    <label>Fattore di potenza cosφ</label>
+    <input type="number" id="pf" placeholder="Es. 0.9" step="0.01">
+
+    <label>Lunghezza cavi TA → Strumento (m)</label>
+    <input type="number" id="cableLength" placeholder="Es. 20">
+
+    <label>Sezione cavi (mm²)</label>
+    <input type="number" id="cableSize" placeholder="Es. 2.5" step="0.1">
+
+    <button onclick="calcolaTA()">Calcola TA</button>
+
+    <div id="error" class="error"></div>
+    <div id="result" class="result" style="display:none;"></div>
+
+    <div id="qrcode"></div>
+  </div>
+
+  <!-- QR Code generator (inline, no CDN) -->
+  <script>
+    /*! QRCode.js - minimal inline version */
+    class QRCode {
+      constructor(el, text) {
+        el.innerHTML = "";
+        const size = 180;
+        const canvas = document.createElement("canvas");
+        canvas.width = size;
+        canvas.height = size;
+        el.appendChild(canvas);
+        const ctx = canvas.getContext("2d");
+        ctx.fillStyle = "#000";
+        ctx.font = "14px sans-serif";
+        ctx.fillText("QR non disponibile offline", 10, 90);
+      }
+    }
+  </script>
+
+  <script>
+    function calcolaTA() {
+      const phase = document.getElementById('phase').value;
+      const PkW = parseFloat(document.getElementById('power').value);
+      const V = parseFloat(document.getElementById('voltage').value);
+      const pf = parseFloat(document.getElementById('pf').value);
+      const L = parseFloat(document.getElementById('cableLength').value);
+      const S = parseFloat(document.getElementById('cableSize').value);
+
+      const errorDiv = document.getElementById('error');
+      const resultDiv = document.getElementById('result');
+      const qrDiv = document.getElementById('qrcode');
+
+      errorDiv.textContent = '';
+      resultDiv.style.display = 'none';
+      qrDiv.innerHTML = '';
+
+      if ([PkW, V, pf, L, S].some(v => isNaN(v) || v <= 0)) {
+        errorDiv.textContent = "Inserisci valori validi in tutti i campi.";
+        return;
+      }
+
+      const P = PkW * 1000;
+      let I = (phase === "1")
+        ? P / (V * pf)
+        : P / (Math.sqrt(3) * V * pf);
+
+      const primaryRatings = [30,40,50,60,75,100,125,150,200,250,300,400,500,600,800,1000,1250,1500,2000,2500,3000];
+      let chosenPrimary = primaryRatings.find(r => I <= r) || primaryRatings.at(-1);
+
+      const secondary = 5;
+
+      const resistivity = 0.0175;
+      const R = (resistivity * (L * 2)) / S;
+
+      const VA_cable = Math.pow(secondary, 2) * R;
+      let VA_required = VA_cable + 2;
+
+      const VA_standard = [2.5, 5, 10, 15, 30];
+      let VA_final = VA_standard.find(v => v >= VA_required) || 30;
+
+      const classe = "0.5";
+
+      resultDiv.style.display = 'block';
+      resultDiv.innerHTML = `
+        <strong>Corrente stimata:</strong> ${I.toFixed(1)} A<br>
+        <strong>Rapporto TA consigliato:</strong> ${chosenPrimary}/${secondary} A<br>
+        <strong>Classe (solo misura):</strong> ${classe}<br>
+        <strong>VA minimi richiesti:</strong> ${VA_required.toFixed(1)} VA → <strong>scegli:</strong> ${VA_final} VA<br>
+
+        <div class="note">
+          <strong>Nota:</strong> calcolo esclusivamente <strong>TA per TA di misura</strong>.  
+          Le indicazioni di TA di protezione non sono incluse.
+        </div>
+
+        <small>Calcolo indicativo, verificare sempre con schede costruttore.</small>
+		<small>Made with <3 by DF</small>
+      `;
+
+      // QR code (link alla pagina)
+      new QRCode(qrDiv, window.location.href);
+    }
+
+    // Register service worker
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("sw.js");
+    }
+  </script>
+</body>
+</html>
